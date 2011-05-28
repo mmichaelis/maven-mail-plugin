@@ -27,6 +27,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,22 +36,32 @@ import java.util.Set;
  * @goal mail-developers
  */
 public final class MailDevelopersMojo extends AbstractMailDevelopersMojo {
+  /**
+   * Subject of the email to send.
+   * @parameter expression="${project.groupId}.${project.artifactId}: Automatic Email"
+   */
+  private String subject;
+
   public void execute() throws MojoExecutionException {
-    final Set<InternetAddress> addresses = getDeveloperAddresses();
-    if (addresses.isEmpty()) {
+    final InternetAddress[] addresses = getDeveloperAddresses();
+    if (addresses.length == 0) {
       getLog().warn("No developers configured. Skipping to send mail.");
       return;
     }
-    final Session session = getSession();
-    final MimeMessage message = new MimeMessage(session);
+    getLog().debug("Developer Emails to send a mail to: " + InternetAddress.toString(addresses));
+    final MimeMessage message;
     try {
-      message.addRecipients(Message.RecipientType.TO, addresses.toArray(new InternetAddress[addresses.size()]));
+      message = createMessage();
+    } catch (MessagingException e) {
+      throw new MojoExecutionException("Could not create initial message.", e);
+    }
+    try {
+      message.addRecipients(Message.RecipientType.TO, addresses);
     } catch (MessagingException e) {
       getLog().warn("Failed to add recipients.", e);
     }
     try {
       message.setSubject("Subject Test");
-      message.setText("Test Text");
     } catch (MessagingException e) {
       throw new MojoExecutionException("Failed to compose mail.", e);
     }
@@ -61,4 +72,8 @@ public final class MailDevelopersMojo extends AbstractMailDevelopersMojo {
     }
   }
 
+  @Override
+  protected String getText() {
+    return "Lorem Ipsum Dolor Sit Amet.";
+  }
 }

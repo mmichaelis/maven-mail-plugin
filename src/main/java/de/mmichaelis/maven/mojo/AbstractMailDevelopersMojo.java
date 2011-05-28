@@ -24,6 +24,7 @@ import org.apache.maven.project.MavenProject;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -46,9 +47,9 @@ public abstract class AbstractMailDevelopersMojo extends AbstractMailMojo {
   @SuppressWarnings({"UnusedDeclaration"})
   private MavenProject project;
 
-  public final Set<InternetAddress> getDeveloperAddresses() throws MojoExecutionException {
+  public final InternetAddress[] getDeveloperAddresses() throws MojoExecutionException {
     final List<Developer> developers = project.getDevelopers();
-    final Set<InternetAddress> result = new HashSet<InternetAddress>(developers.size());
+    final List<InternetAddress> result = new ArrayList<InternetAddress>(developers.size());
     for (final Developer developer : developers) {
       final String developerId = developer.getId();
       final String email = developer.getEmail();
@@ -73,6 +74,6 @@ public abstract class AbstractMailDevelopersMojo extends AbstractMailMojo {
       }
       result.addAll(Arrays.asList(addresses));
     }
-    return result;
+    return result.toArray(new InternetAddress[result.size()]);
   }
 }

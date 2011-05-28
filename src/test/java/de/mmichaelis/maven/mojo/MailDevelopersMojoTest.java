@@ -16,37 +16,58 @@
 
 package de.mmichaelis.maven.mojo;
 
-import com.dumbster.smtp.SimpleSmtpServer;
 import com.dumbster.smtp.SmtpMessage;
 import org.apache.maven.model.Developer;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.ServerSocket;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.support.membermodification.MemberMatcher.field;
 
 /**
  * Tests {@link MailDevelopersMojo}.
  *
  * @since 5/27/11 11:26 PM
  */
-public class MailDevelopersMojoTest {
-  public static int findFreePort()
-          throws IOException {
-    ServerSocket server =
-            new ServerSocket(0);
-    int port = server.getLocalPort();
-    server.close();
-    return port;
+public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
+
+  private MailDevelopersMojo mojo;
+  private List<Developer> developers;
+
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+
+    developers = new ArrayList<Developer>(3);
+    for (int i = 0; i < 3; i++) {
+      final Developer developer = new Developer();
+      developer.setId("id" + i);
+      developer.setEmail("dev"+i+"@example.org");
+      developer.setName("Deve Loper " + i);
+      developers.add(developer);
+    }
+
+    mojo = new MailDevelopersMojo();
+    final MavenProject project = mock(MavenProject.class);
+    final Field projectField = field(MailDevelopersMojo.class, "project");
+    final Field fromField = field(MailDevelopersMojo.class, "from");
+    final Field hostField = field(MailDevelopersMojo.class, "smtphost");
+    final Field portField = field(MailDevelopersMojo.class, "smtpport");
+    projectField.set(mojo, project);
+    fromField.set(mojo, "from@example.org");
+    hostField.set(mojo, "localhost");
+    portField.set(mojo, String.valueOf(smtpPort));
+
+    when(project.getDevelopers()).thenReturn(developers);
   }
 
   /**
@@ -56,32 +77,14 @@ public class MailDevelopersMojoTest {
    */
   @Test
   public void testSimple() throws Exception {
-    final int freePort = findFreePort();
-    SimpleSmtpServer server = SimpleSmtpServer.start(freePort);
-    try {
-      final Developer developer = new Developer();
-      developer.setId("id1");
-      developer.setEmail("mark.michaelis@coremedia.com");
-      developer.setName("Mark Michaelis");
-      final MailDevelopersMojo mojo = new MailDevelopersMojo();
-      final MavenProject project = mock(MavenProject.class);
-      final Field projectField = PowerMockito.field(MailDevelopersMojo.class, "project");
-      final Field fromField = PowerMockito.field(MailDevelopersMojo.class, "from");
-      final Field hostField = PowerMockito.field(MailDevelopersMojo.class, "smtphost");
-      final Field portField = PowerMockito.field(MailDevelopersMojo.class, "smtpport");
-      projectField.set(mojo, project);
-      fromField.set(mojo, "from@example.org");
-      hostField.set(mojo, "localhost");
-      portField.set(mojo, String.valueOf(freePort));
-      when(project.getDevelopers()).thenReturn(Collections.singletonList(developer));
-      mojo.execute();
-      assertTrue(server.getReceivedEmailSize() == 1);
-      Iterator emailIter = server.getReceivedEmail();
-      SmtpMessage email = (SmtpMessage) emailIter.next();
-      assertEquals(email.getHeaderValue("Subject"), "Test");
-      assertTrue(email.getBody().equals("Test Body"));
-    } finally {
-      server.stop();
+    mojo.execute();
+    assertTrue(smtpServer.getReceivedEmailSize() == 1);
+    final SmtpMessage next = (SmtpMessage) smtpServer.getReceivedEmail().next();
+    System.out.println(next);
+    final String[] tos = next.getHeaderValues("To");
+    for (int i = 0; i < tos.length; i++) {
+      String to = tos[i];
+      System.out.println(to);
     }
   }
 }
