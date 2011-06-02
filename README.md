@@ -4,7 +4,7 @@ Maven Mail Plugin
 This plugin provides goals to send mails from within the Maven Lifecycle.
 The main purpose is to inform developers of a project.
 
-Anyone who would like to contribute is welcomed. If you have just a few ideas
+Anyone who would like to contribute is welcome. If you have just a few ideas
 don't hesitate to add issues to this project.
 
 For alternatives see here:
