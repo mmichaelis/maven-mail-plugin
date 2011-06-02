@@ -14,57 +14,48 @@
  * limitations under the License.                                             *
  ******************************************************************************/
 
-package de.mmichaelis.maven.mojo;
+package de.mmichaelis.maven.mojo.mail;
 
-import com.dumbster.smtp.SimpleSmtpServer;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.maven.plugin.logging.Log;
 
-import java.io.IOException;
-import java.net.ServerSocket;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 /**
- * @since 5/28/11 9:01 PM
+ * Adds common headers for bulk emails such as notification mails.
+ * @since 6/2/11 10:05 PM
  */
-public abstract class AbstractMailMojoTestBase {
+public class MailBulk implements MailHeader {
+  private static final MailBulk instance = new MailBulk();
+
   /**
-   * Logger Instance.
+   * Constructor.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractMailMojoTestBase.class);
+  private MailBulk() {
+    // use the instance
+  }
 
-
-  protected SimpleSmtpServer smtpServer;
-  protected static int smtpPort;
-
-  private static int findFreePort() throws IOException {
-    final ServerSocket server = new ServerSocket(0);
-    final int port;
+  /**
+   * Adds the header information to the given message.
+   *
+   * @param message message to add the header to
+   * @param log the log to report possible problems or debug statements to
+   */
+  @Override
+  public void addHeader(final MimeMessage message, final Log log) {
     try {
-      port = server.getLocalPort();
-    } finally {
-      server.close();
+      message.addHeader("Precedence", "bulk");
+      message.addHeader("X-Auto-Response-Suppress", "OOF");
+    } catch (MessagingException e) {
+      log.warn("Could not add headers for bulk emails.", e);
     }
-    return port;
   }
 
-  @BeforeClass
-  public static void setUpClass() throws Exception {
-    smtpPort = findFreePort();
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    LOG.info("Starting SMTP Server at port " + smtpPort);
-    smtpServer = SimpleSmtpServer.start(smtpPort);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    smtpServer.stop();
-    LOG.info("Stopped SMTP Server.");
+  /**
+   * Return the instance.
+   * @return instance
+   */
+  public static MailBulk getInstance() {
+    return instance;
   }
 }

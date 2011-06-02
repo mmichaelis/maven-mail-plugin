@@ -14,57 +14,22 @@
  * limitations under the License.                                             *
  ******************************************************************************/
 
-package de.mmichaelis.maven.mojo;
+package de.mmichaelis.maven.mojo.mail;
 
-import com.dumbster.smtp.SimpleSmtpServer;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.maven.plugin.logging.Log;
 
-import java.io.IOException;
-import java.net.ServerSocket;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 /**
- * @since 5/28/11 9:01 PM
+ * A header element (or a group of elements).
+ * @since 6/2/11 9:30 PM
  */
-public abstract class AbstractMailMojoTestBase {
+public interface MailHeader {
   /**
-   * Logger Instance.
+   * Adds the header information to the given message.
+   * @param message message to add the header to
+   * @param log the log to report possible problems or debug statements to
    */
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractMailMojoTestBase.class);
-
-
-  protected SimpleSmtpServer smtpServer;
-  protected static int smtpPort;
-
-  private static int findFreePort() throws IOException {
-    final ServerSocket server = new ServerSocket(0);
-    final int port;
-    try {
-      port = server.getLocalPort();
-    } finally {
-      server.close();
-    }
-    return port;
-  }
-
-  @BeforeClass
-  public static void setUpClass() throws Exception {
-    smtpPort = findFreePort();
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    LOG.info("Starting SMTP Server at port " + smtpPort);
-    smtpServer = SimpleSmtpServer.start(smtpPort);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    smtpServer.stop();
-    LOG.info("Stopped SMTP Server.");
-  }
+  void addHeader(final MimeMessage message, final Log log);
 }

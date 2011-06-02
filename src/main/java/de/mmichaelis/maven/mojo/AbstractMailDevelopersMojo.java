@@ -17,7 +17,6 @@
 package de.mmichaelis.maven.mojo;
 
 import org.apache.maven.model.Developer;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
@@ -26,13 +25,12 @@ import javax.mail.internet.InternetAddress;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.codehaus.plexus.util.StringUtils.isEmpty;
 
 /**
+ * Abstract Mojo which sends mails to the configured developers.
  * @since 5/27/11 10:39 PM
  * @requiresProject true
  */
@@ -47,7 +45,12 @@ public abstract class AbstractMailDevelopersMojo extends AbstractMailMojo {
   @SuppressWarnings({"UnusedDeclaration"})
   private MavenProject project;
 
-  public final InternetAddress[] getDeveloperAddresses() throws MojoExecutionException {
+  /**
+   * Evaluates the recipients from the list of developers.
+   * @return recipients of the email
+   * @throws MojoExecutionException if a problem occurs evaluating the mail addresses
+   */
+  public final InternetAddress[] getRecipients() throws MojoExecutionException {
     final List<Developer> developers = project.getDevelopers();
     final List<InternetAddress> result = new ArrayList<InternetAddress>(developers.size());
     for (final Developer developer : developers) {
@@ -66,7 +69,7 @@ public abstract class AbstractMailDevelopersMojo extends AbstractMailMojo {
       if (!isEmpty(name)) {
         for (final InternetAddress address : addresses) {
           try {
-            address.setPersonal(name);
+            address.setPersonal(name, getMimeCharSet());
           } catch (UnsupportedEncodingException e) {
             getLog().warn("Unable to set name for email of developer " + developerId + ".", e);
           }
