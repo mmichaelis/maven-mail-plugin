@@ -10,6 +10,12 @@
   <name>maven-mail-plugin Maven Plugin</name>
   <url>http://maven.apache.org</url>
 
+  <scm>
+    <connection>git://github.com/mmichaelis/maven-mail-plugin.git</connection>
+    <developerConnection>git@github.com:mmichaelis/maven-mail-plugin.git</developerConnection>
+    <url>https://github.com/mmichaelis/maven-mail-plugin</url>
+  </scm>
+
   <properties>
     <!-- Compiler Options -->
 
