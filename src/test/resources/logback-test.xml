@@ -21,9 +21,7 @@
     </encoder>
   </appender>
 
-  <logger name="de.mmichaelis.maven.mojo" level="DEBUG">
-    <appender-ref ref="stdout"/>
-  </logger>
+  <logger name="de.mmichaelis.maven.mojo" level="DEBUG"/>
 
   <!-- Set system property "root-level" to OFF to turn off logging or
        any valid logging level. Default is: WARN. -->
