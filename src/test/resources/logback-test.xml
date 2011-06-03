@@ -25,7 +25,7 @@
 
   <!-- Set system property "root-level" to OFF to turn off logging or
        any valid logging level. Default is: WARN. -->
-  <root level="${root-level:-WARN}">
+  <root level="${root-level:-DEBUG}">
     <appender-ref ref="stdout"/>
   </root>
 </configuration>

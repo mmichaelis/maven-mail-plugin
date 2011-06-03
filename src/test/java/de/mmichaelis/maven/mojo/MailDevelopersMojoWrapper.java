@@ -16,56 +16,13 @@
 
 package de.mmichaelis.maven.mojo;
 
-import com.dumbster.smtp.SimpleSmtpServer;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.ServerSocket;
-
 /**
- * @since 5/28/11 9:01 PM
+ * Wrapper for the {@link MailDevelopersMojo}.
+ *
+ * @since 6/3/11 9:23 PM
  */
-public abstract class AbstractMailMojoTestBase {
-  /**
-   * Logger Instance.
-   */
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractMailMojoTestBase.class);
-
-
-  protected SimpleSmtpServer smtpServer;
-  protected static int smtpPort;
-
-  private static int findFreePort() throws IOException {
-    final ServerSocket server = new ServerSocket(0);
-    final int port;
-    try {
-      port = server.getLocalPort();
-    } finally {
-      server.close();
-    }
-    return port;
-  }
-
-  @BeforeClass
-  public static void setUpClass() throws Exception {
-    smtpPort = findFreePort();
-    System.setProperty("mail.mime.foldtext", "false");
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    LOG.info("Starting SMTP Server at port " + smtpPort);
-    smtpServer = SimpleSmtpServer.start(smtpPort);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    smtpServer.stop();
-    LOG.info("Stopped SMTP Server.");
+public class MailDevelopersMojoWrapper extends AbstractMailDevelopersMojoWrapper<MailDevelopersMojo> {
+  public MailDevelopersMojoWrapper(final MailDevelopersMojo mojo) throws IllegalAccessException {
+    super(mojo);
   }
 }

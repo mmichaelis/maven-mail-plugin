@@ -16,56 +16,20 @@
 
 package de.mmichaelis.maven.mojo;
 
-import com.dumbster.smtp.SimpleSmtpServer;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.ServerSocket;
+import org.apache.maven.project.MavenProject;
 
 /**
- * @since 5/28/11 9:01 PM
+ * @since 6/3/11 9:32 PM
  */
-public abstract class AbstractMailMojoTestBase {
-  /**
-   * Logger Instance.
-   */
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractMailMojoTestBase.class);
+public class AbstractMailDevelopersMojoWrapper<T extends AbstractMailDevelopersMojo> extends AbstractMailMojoWrapper<T> {
 
-
-  protected SimpleSmtpServer smtpServer;
-  protected static int smtpPort;
-
-  private static int findFreePort() throws IOException {
-    final ServerSocket server = new ServerSocket(0);
-    final int port;
-    try {
-      port = server.getLocalPort();
-    } finally {
-      server.close();
-    }
-    return port;
+  public AbstractMailDevelopersMojoWrapper(final T mojo) throws IllegalAccessException {
+    super(mojo);
+    addFields("project");
   }
 
-  @BeforeClass
-  public static void setUpClass() throws Exception {
-    smtpPort = findFreePort();
-    System.setProperty("mail.mime.foldtext", "false");
+  public void setProject(final MavenProject project) throws IllegalAccessException {
+    fieldMap.get("project").set(mojo, project);
   }
 
-  @Before
-  public void setUp() throws Exception {
-    LOG.info("Starting SMTP Server at port " + smtpPort);
-    smtpServer = SimpleSmtpServer.start(smtpPort);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    smtpServer.stop();
-    LOG.info("Stopped SMTP Server.");
-  }
 }

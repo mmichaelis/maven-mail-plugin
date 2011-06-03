@@ -49,6 +49,7 @@ public abstract class AbstractMailMojo extends AbstractMojo {
   protected static final String LF = "\r\n";
   private static final String HOSTNAME;
   private static final String HOSTIP;
+  private static final String DEFAULT_FROM;
   private static final String USERNAME = System.getProperty("user.name");
   private static final String SIGNATURE_SEPARATOR = "-- ";
 
@@ -86,7 +87,7 @@ public abstract class AbstractMailMojo extends AbstractMojo {
   /**
    * The host to send the mail from.
    *
-   * @parameter default-value="localhost" expression="${mail.smtp.port}"
+   * @parameter default-value="25" expression="${mail.smtp.port}"
    */
   @SuppressWarnings({"UnusedDeclaration"})
   private String smtpport;
@@ -174,6 +175,8 @@ public abstract class AbstractMailMojo extends AbstractMojo {
     }
     HOSTNAME = hostname;
     HOSTIP = hostip;
+
+    DEFAULT_FROM = USERNAME + "@" + HOSTNAME;
   }
 
   /**
@@ -186,7 +189,7 @@ public abstract class AbstractMailMojo extends AbstractMojo {
     properties.setProperty("mail.smtp.host", smtphost);
     properties.setProperty("mail.smtp.port", smtpport);
     // Influences the Message-ID
-    properties.setProperty("mail.from", from);
+    properties.setProperty("mail.from", from == null ? DEFAULT_FROM : from);
     final Session session = Session.getDefaultInstance(properties);
     session.setDebug(getLog().isDebugEnabled());
     return session;
@@ -296,11 +299,10 @@ public abstract class AbstractMailMojo extends AbstractMojo {
    */
   private static InternetAddress[] getDefaultSenders() throws MojoExecutionException {
     final InternetAddress[] senders;
-    final String defaultFrom = USERNAME + "@" + HOSTNAME;
     try {
-      senders = InternetAddress.parse(defaultFrom);
+      senders = InternetAddress.parse(DEFAULT_FROM);
     } catch (AddressException e) {
-      throw new MojoExecutionException("Could not parse default sender mail address " + defaultFrom + ".", e);
+      throw new MojoExecutionException("Could not parse default sender mail address " + DEFAULT_FROM + ".", e);
     }
     return senders;
   }

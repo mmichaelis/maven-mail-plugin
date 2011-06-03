@@ -18,19 +18,20 @@ package de.mmichaelis.maven.mojo;
 
 import com.dumbster.smtp.SmtpMessage;
 import org.apache.maven.model.Developer;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.support.membermodification.MemberMatcher.field;
 
 /**
  * Tests {@link MailDevelopersMojo}.
@@ -38,36 +39,61 @@ import static org.powermock.api.support.membermodification.MemberMatcher.field;
  * @since 5/27/11 11:26 PM
  */
 public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
+  /**
+   * Logger Instance.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger(MailDevelopersMojoTest.class);
 
-  private MailDevelopersMojo mojo;
-  private List<Developer> developers;
+  // Actually we cannot have more than 2 developers as the third one will be wrapped and dumpster seems to be
+  // unable to handle wrapped headers.
+  private static final int MAX_DEVELOPERS = 2;
+
+  private MailDevelopersMojoWrapper mojoWrapper;
+  private Developer[] developers;
 
   @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
 
-    developers = new ArrayList<Developer>(3);
-    for (int i = 0; i < 3; i++) {
+    developers = new Developer[MAX_DEVELOPERS];
+    for (int i = 0; i < MAX_DEVELOPERS; i++) {
       final Developer developer = new Developer();
       developer.setId("id" + i);
-      developer.setEmail("dev"+i+"@example.org");
+      developer.setEmail("dev" + i + "@example.org");
       developer.setName("Deve Loper " + i);
-      developers.add(developer);
+      developers[i] = developer;
     }
 
-    mojo = new MailDevelopersMojo();
-    final MavenProject project = mock(MavenProject.class);
-    final Field projectField = field(MailDevelopersMojo.class, "project");
-    final Field fromField = field(MailDevelopersMojo.class, "from");
-    final Field hostField = field(MailDevelopersMojo.class, "smtphost");
-    final Field portField = field(MailDevelopersMojo.class, "smtpport");
-    projectField.set(mojo, project);
-    fromField.set(mojo, "from@example.org");
-    hostField.set(mojo, "localhost");
-    portField.set(mojo, String.valueOf(smtpPort));
+    mojoWrapper = new MailDevelopersMojoWrapper(new MailDevelopersMojo());
 
-    when(project.getDevelopers()).thenReturn(developers);
+    mojoWrapper.setSmtpPort(String.valueOf(smtpPort));
+  }
+
+  @Test
+  public void testMailToOneDevelopers() throws Exception {
+    doTestMailToDevelopers(1);
+  }
+
+  @Test
+  public void testMailToTwoDevelopers() throws Exception {
+    doTestMailToDevelopers(2);
+  }
+
+  private void doTestMailToDevelopers(final int numDevelopers) throws IllegalAccessException, MojoExecutionException, MojoFailureException {
+    final MavenProject project = mock(MavenProject.class);
+    when(project.getDevelopers()).thenReturn(Arrays.asList(Arrays.copyOf(developers, numDevelopers)));
+    mojoWrapper.setProject(project);
+    final MailDevelopersMojo mojo = mojoWrapper.getMojo();
+    mojo.execute();
+    assertEquals("Should have received one email.", 1, smtpServer.getReceivedEmailSize());
+    final SmtpMessage mail = (SmtpMessage) smtpServer.getReceivedEmail().next();
+    LOG.debug("Mail for one developer:\n" + mail);
+    final String tos = Arrays.toString(mail.getHeaderValues("To"));
+    LOG.debug("Header(To): " + tos);
+    for (int i = 0; i < numDevelopers; i++) {
+      assertTrue("Mail of developer no. " + i + " should be contained in header.", tos.contains(developers[i].getEmail()));
+    }
   }
 
   /**
@@ -75,9 +101,10 @@ public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
    *
    * @throws Exception in case of an error
    */
+/*
   @Test
   public void testSimple() throws Exception {
-    mojo.execute();
+    mojoWrapper.execute();
     assertTrue(smtpServer.getReceivedEmailSize() == 1);
     final SmtpMessage next = (SmtpMessage) smtpServer.getReceivedEmail().next();
     System.out.println(next);
@@ -87,4 +114,6 @@ public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
       System.out.println(to);
     }
   }
+*/
+
 }
