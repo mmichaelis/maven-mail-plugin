@@ -89,9 +89,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>dumbster</groupId>
-      <artifactId>dumbster</artifactId>
-      <version>1.6</version>
+      <groupId>org.jvnet.mock-javamail</groupId>
+      <artifactId>mock-javamail</artifactId>
+      <version>1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>

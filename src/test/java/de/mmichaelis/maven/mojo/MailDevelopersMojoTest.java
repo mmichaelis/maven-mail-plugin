@@ -16,20 +16,19 @@
 
 package de.mmichaelis.maven.mojo;
 
-import com.dumbster.smtp.SmtpMessage;
 import org.apache.maven.model.Developer;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.jvnet.mock_javamail.Mailbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.mail.Message;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -38,7 +37,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  *
  * @since 5/27/11 11:26 PM
  */
-public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
+public class MailDevelopersMojoTest {
   /**
    * Logger Instance.
    */
@@ -46,16 +45,13 @@ public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
 
   // Actually we cannot have more than 2 developers as the third one will be wrapped and dumpster seems to be
   // unable to handle wrapped headers.
-  private static final int MAX_DEVELOPERS = 2;
+  private static final int MAX_DEVELOPERS = 4;
 
   private MailDevelopersMojoWrapper mojoWrapper;
   private Developer[] developers;
 
-  @Override
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     developers = new Developer[MAX_DEVELOPERS];
     for (int i = 0; i < MAX_DEVELOPERS; i++) {
       final Developer developer = new Developer();
@@ -66,8 +62,11 @@ public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
     }
 
     mojoWrapper = new MailDevelopersMojoWrapper(new MailDevelopersMojo());
+  }
 
-    mojoWrapper.setSmtpPort(String.valueOf(smtpPort));
+  @After
+  public void tearDown() throws Exception {
+    Mailbox.clearAll();
   }
 
   @Test
@@ -80,40 +79,29 @@ public class MailDevelopersMojoTest extends AbstractMailMojoTestBase {
     doTestMailToDevelopers(2);
   }
 
-  private void doTestMailToDevelopers(final int numDevelopers) throws IllegalAccessException, MojoExecutionException, MojoFailureException {
+  @Test
+  public void testMailToThreeDevelopers() throws Exception {
+    doTestMailToDevelopers(3);
+  }
+
+  @Test
+  public void testMailToFourDevelopers() throws Exception {
+    doTestMailToDevelopers(4);
+  }
+
+  private void doTestMailToDevelopers(final int numDevelopers) throws Exception {
     final MavenProject project = mock(MavenProject.class);
     when(project.getDevelopers()).thenReturn(Arrays.asList(Arrays.copyOf(developers, numDevelopers)));
     mojoWrapper.setProject(project);
     final MailDevelopersMojo mojo = mojoWrapper.getMojo();
     mojo.execute();
-    assertEquals("Should have received one email.", 1, smtpServer.getReceivedEmailSize());
-    final SmtpMessage mail = (SmtpMessage) smtpServer.getReceivedEmail().next();
-    LOG.debug("Mail for one developer:\n" + mail);
-    final String tos = Arrays.toString(mail.getHeaderValues("To"));
-    LOG.debug("Header(To): " + tos);
     for (int i = 0; i < numDevelopers; i++) {
-      assertTrue("Mail of developer no. " + i + " should be contained in header.", tos.contains(developers[i].getEmail()));
+      final Developer developer = developers[i];
+      final Mailbox inbox = Mailbox.get(developer.getEmail());
+      assertEquals("Should have received one email.", 1, inbox.size());
+      final Message message = inbox.get(0);
+      LOG.debug("Mail for one developer:\n" + message);
     }
   }
-
-  /**
-   * Simple test to send an email.
-   *
-   * @throws Exception in case of an error
-   */
-/*
-  @Test
-  public void testSimple() throws Exception {
-    mojoWrapper.execute();
-    assertTrue(smtpServer.getReceivedEmailSize() == 1);
-    final SmtpMessage next = (SmtpMessage) smtpServer.getReceivedEmail().next();
-    System.out.println(next);
-    final String[] tos = next.getHeaderValues("To");
-    for (int i = 0; i < tos.length; i++) {
-      String to = tos[i];
-      System.out.println(to);
-    }
-  }
-*/
 
 }
