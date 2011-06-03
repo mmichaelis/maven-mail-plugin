@@ -16,6 +16,8 @@
 
 package de.mmichaelis.maven.mojo;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.maven.model.Developer;
 import org.apache.maven.project.MavenProject;
 import org.junit.After;
@@ -25,10 +27,17 @@ import org.jvnet.mock_javamail.Mailbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.mail.Address;
 import javax.mail.Message;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Arrays;
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -93,15 +102,54 @@ public class MailDevelopersMojoTest {
     final MavenProject project = mock(MavenProject.class);
     when(project.getDevelopers()).thenReturn(Arrays.asList(Arrays.copyOf(developers, numDevelopers)));
     mojoWrapper.setProject(project);
-    final MailDevelopersMojo mojo = mojoWrapper.getMojo();
-    mojo.execute();
+    mojoWrapper.execute();
     for (int i = 0; i < numDevelopers; i++) {
       final Developer developer = developers[i];
       final Mailbox inbox = Mailbox.get(developer.getEmail());
       assertEquals("Should have received one email.", 1, inbox.size());
       final Message message = inbox.get(0);
-      LOG.debug("Mail for one developer:\n" + message);
+      final InputStream stream = message.getInputStream();
+      final int messageSize = message.getSize();
+      final StringWriter writer;
+      try {
+        writer = new StringWriter(messageSize < 0 ? 512 : messageSize);
+        IOUtils.copy(stream, writer);
+      } finally {
+        stream.close();
+      }
+      LOG.debug("Mail for one developer:\n" + writer.toString());
     }
   }
 
+  @Test
+  public void testFullyConfiguredMail() throws Exception {
+    final MavenProject project = mock(MavenProject.class);
+    when(project.getDevelopers()).thenReturn(Arrays.asList(developers));
+    mojoWrapper.setProject(project);
+    mojoWrapper.setCharset("UTF-8");
+    mojoWrapper.setExpires("2");
+    final String from = "John Doe <johndoe@github.com>";
+    mojoWrapper.setFrom(from);
+    mojoWrapper.setPriority("high");
+    final String subject = "testFullyConfiguredMail";
+    mojoWrapper.setSubject(subject);
+    final String topic = "MyTopic";
+    mojoWrapper.setTopic(topic);
+    final Date now = new Date();
+    mojoWrapper.execute();
+    final Mailbox inbox = Mailbox.get(developers[0].getEmail());
+    assertEquals("One new email for the first developer.", 1, inbox.getNewMessageCount());
+    final Message message = inbox.get(0);
+    assertTrue("Sent date should signal to be today.", DateUtils.isSameDay(now, message.getSentDate()));
+    assertEquals("Size of recipients should match number of developers.", developers.length, message.getAllRecipients().length);
+    final Address[] senders = message.getFrom();
+    assertNotNull("Sender address should be set.", senders);
+    assertEquals("Number of senders should be 1.", 1, senders.length);
+    assertEquals("Sender in message should match original sender.", from, senders[0].toString());
+    final String messageSubject = message.getSubject();
+    assertTrue("Subject should contain original subject.", messageSubject.contains(subject));
+    assertTrue("Subject should contain topic.", messageSubject.contains(topic));
+
+    // TODO: Check additional headers
+  }
 }

@@ -16,6 +16,9 @@
 
 package de.mmichaelis.maven.mojo;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +53,10 @@ public class AbstractMailMojoWrapper<T extends AbstractMailMojo> {
 
   public T getMojo() {
     return mojo;
+  }
+
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    mojo.execute();
   }
 
   protected final void addFields(final String... fields) {
