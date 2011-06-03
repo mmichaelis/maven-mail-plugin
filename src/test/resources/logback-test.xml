@@ -15,17 +15,19 @@
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 <configuration>
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <layout class="ch.qos.logback.classic.PatternLayout">
-      <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
-    </layout>
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%5level] %logger{0} - %message \(%thread, %class, %file:%line\)%n</pattern>
+    </encoder>
   </appender>
 
-  <logger name="de.mmichaelis.maven.mojo" level="DEBUG" />
+  <logger name="de.mmichaelis.maven.mojo" level="DEBUG">
+    <appender-ref ref="stdout"/>
+  </logger>
 
   <!-- Set system property "root-level" to OFF to turn off logging or
        any valid logging level. Default is: WARN. -->
   <root level="${root-level:-WARN}">
-    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="stdout"/>
   </root>
 </configuration>
