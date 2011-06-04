@@ -16,20 +16,30 @@
 
 package de.mmichaelis.maven.mojo;
 
-import org.apache.maven.project.MavenProject;
+import java.io.File;
 
 /**
- * @since 6/3/11 9:32 PM
+ * Represents the message to be sent. If both, text and textFile is set textFile will be taken.
+ * @since 6/4/11 11:26 PM
  */
-public class AbstractMailDevelopersMojoWrapper<T extends AbstractMailDevelopersMojo> extends AbstractMailMojoWrapper<T> {
+public class Message {
+  /**
+   * The message to send.
+   */
+  private String text;
+  /**
+   * The message to be sent will be read from the given file.
+   */
+  private File textFile;
 
-  public AbstractMailDevelopersMojoWrapper(final T mojo) throws IllegalAccessException {
-    super(mojo);
-    addFields("project");
+  public Message() {
   }
 
-  public void setProject(final MavenProject project) throws IllegalAccessException {
-    fieldMap.get("project").set(wrapped, project);
+  public String getText() {
+    return text;
   }
 
+  public File getTextFile() {
+    return textFile;
+  }
 }

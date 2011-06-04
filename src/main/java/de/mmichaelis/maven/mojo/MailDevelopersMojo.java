@@ -19,12 +19,21 @@ package de.mmichaelis.maven.mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
+import java.io.File;
+
 /**
  * Goal which touches a timestamp file.
  *
  * @goal mail-developers
  */
 public final class MailDevelopersMojo extends AbstractMailDevelopersMojo {
+  /**
+   * The message to send.
+   * @parameter
+   * @required 
+   */
+  private Message message;
+  
   /**
    * Get the text body for this email.
    *
@@ -38,6 +47,24 @@ public final class MailDevelopersMojo extends AbstractMailDevelopersMojo {
    */
   @Override
   protected String getPlainText() throws MojoExecutionException, MojoFailureException {
-    return "Lorem Ipsum Dolor Sit Amet";
+    if (message == null) {
+      throw new MojoExecutionException("No message set.");
+    }
+    final String text = message.getText();
+    final File textFile = message.getTextFile();
+    if (text == null && textFile == null) {
+      throw new MojoExecutionException("You should either specify <text> or <textFile> as message.");
+    }
+    if (text != null && textFile != null) {
+      getLog().warn("Specified both <text> and <textFile> as message. <textFile> will be taken.");
+    }
+    if (textFile != null) {
+      return getPlainTextFromFile();
+    }
+    return text;
+  }
+
+  private String getPlainTextFromFile() throws MojoExecutionException, MojoFailureException {
+    return null;
   }
 }

@@ -16,20 +16,22 @@
 
 package de.mmichaelis.maven.mojo;
 
-import org.apache.maven.project.MavenProject;
+import java.io.File;
 
 /**
- * @since 6/3/11 9:32 PM
+ * @since 6/4/11 11:56 PM
  */
-public class AbstractMailDevelopersMojoWrapper<T extends AbstractMailDevelopersMojo> extends AbstractMailMojoWrapper<T> {
-
-  public AbstractMailDevelopersMojoWrapper(final T mojo) throws IllegalAccessException {
-    super(mojo);
-    addFields("project");
+public final class MessageWrapper extends AbstractClassWrapper<Message> {
+  public MessageWrapper(final Message wrapped) {
+    super(wrapped);
+    addFields("text", "textFile");
   }
 
-  public void setProject(final MavenProject project) throws IllegalAccessException {
-    fieldMap.get("project").set(wrapped, project);
+  public void setText(final String text) throws IllegalAccessException {
+    fieldMap.get("text").set(wrapped, text);
   }
 
+  public void setTextFile(final File file) throws IllegalAccessException {
+    fieldMap.get("textFile").set(wrapped, file);
+  }
 }

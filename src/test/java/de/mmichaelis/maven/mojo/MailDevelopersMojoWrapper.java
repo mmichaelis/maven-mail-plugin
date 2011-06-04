@@ -24,5 +24,10 @@ package de.mmichaelis.maven.mojo;
 public class MailDevelopersMojoWrapper extends AbstractMailDevelopersMojoWrapper<MailDevelopersMojo> {
   public MailDevelopersMojoWrapper(final MailDevelopersMojo mojo) throws IllegalAccessException {
     super(mojo);
+    addField("message");
+  }
+
+  public void setMessage(final Message message) throws IllegalAccessException {
+    fieldMap.get("message").set(wrapped, message);
   }
 }

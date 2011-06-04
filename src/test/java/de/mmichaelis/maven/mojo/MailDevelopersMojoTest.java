@@ -57,6 +57,7 @@ public class MailDevelopersMojoTest {
   private static final int MAX_DEVELOPERS = 4;
 
   private MailDevelopersMojoWrapper mojoWrapper;
+  private MessageWrapper messageWrapper;
   private Developer[] developers;
 
   @Before
@@ -71,6 +72,9 @@ public class MailDevelopersMojoTest {
     }
 
     mojoWrapper = new MailDevelopersMojoWrapper(new MailDevelopersMojo());
+    messageWrapper = new MessageWrapper(new de.mmichaelis.maven.mojo.Message());
+    messageWrapper.setText("Lorem Ipsum Dolor Sit Amet.");
+    mojoWrapper.setMessage(messageWrapper.getWrapped());
   }
 
   @After

@@ -16,20 +16,37 @@
 
 package de.mmichaelis.maven.mojo;
 
-import org.apache.maven.project.MavenProject;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.powermock.api.support.membermodification.MemberMatcher.field;
 
 /**
- * @since 6/3/11 9:32 PM
+ * Wrapper for accessing classes through the mock framework.
+ * @since 6/4/11 11:57 PM
  */
-public class AbstractMailDevelopersMojoWrapper<T extends AbstractMailDevelopersMojo> extends AbstractMailMojoWrapper<T> {
+public class AbstractClassWrapper<T> {
+  protected final T wrapped;
+  protected final Map<String, Field> fieldMap = new HashMap<String, Field>();
 
-  public AbstractMailDevelopersMojoWrapper(final T mojo) throws IllegalAccessException {
-    super(mojo);
-    addFields("project");
+  public AbstractClassWrapper(final T wrapped) {
+    this.wrapped = wrapped;
   }
 
-  public void setProject(final MavenProject project) throws IllegalAccessException {
-    fieldMap.get("project").set(wrapped, project);
+  public T getWrapped() {
+    return wrapped;
   }
 
+
+  protected final void addFields(final String... fields) {
+    for (final String field : fields) {
+      addField(field);
+    }
+  }
+
+  protected final void addField(final String fieldName) {
+    final Field classField = field(wrapped.getClass(), fieldName);
+    fieldMap.put(fieldName, classField);
+  }
 }

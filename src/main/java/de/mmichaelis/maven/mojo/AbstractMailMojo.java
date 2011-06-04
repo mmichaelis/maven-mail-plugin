@@ -90,7 +90,7 @@ public abstract class AbstractMailMojo extends AbstractMojo {
    * @parameter default-value="25" expression="${mail.smtp.port}"
    */
   @SuppressWarnings({"UnusedDeclaration"})
-  private String smtpport;
+  private Integer smtpport;
 
   /**
    * When automatic mails should expire in days.
@@ -187,7 +187,7 @@ public abstract class AbstractMailMojo extends AbstractMojo {
   protected Session getSession() {
     final Properties properties = new Properties();
     properties.setProperty("mail.smtp.host", smtphost);
-    properties.setProperty("mail.smtp.port", smtpport);
+    properties.setProperty("mail.smtp.port", smtpport.toString());
     // Influences the Message-ID
     properties.setProperty("mail.from", from == null ? DEFAULT_FROM : from);
     final Session session = Session.getDefaultInstance(properties);

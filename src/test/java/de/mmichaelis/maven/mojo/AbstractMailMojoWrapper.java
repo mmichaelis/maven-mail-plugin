@@ -28,20 +28,17 @@ import static org.powermock.api.support.membermodification.MemberMatcher.field;
 /**
  * @since 6/3/11 9:32 PM
  */
-public class AbstractMailMojoWrapper<T extends AbstractMailMojo> {
-
-  protected final T mojo;
-  protected final Map<String, Field> fieldMap = new HashMap<String, Field>();
+public class AbstractMailMojoWrapper<T extends AbstractMailMojo> extends AbstractClassWrapper<T> {
 
   public AbstractMailMojoWrapper(final T mojo) throws IllegalAccessException {
-    this.mojo = mojo;
+    super(mojo);
 
     addFields("skip", "from", "smtphost", "smtpport", "expires", "charset", "priority", "failOnError", "topic", "subject", "dryRun");
 
     /* Defaults */
     setSkip(false);
     setSmtpHost("localhost");
-    setSmtpPort("25");
+    setSmtpPort(25);
     setExpires("1");
     setCharset("ISO-8859-1");
     setPriority("low");
@@ -52,65 +49,54 @@ public class AbstractMailMojoWrapper<T extends AbstractMailMojo> {
   }
 
   public T getMojo() {
-    return mojo;
+    return wrapped;
   }
 
   public void execute() throws MojoExecutionException, MojoFailureException {
-    mojo.execute();
-  }
-
-  protected final void addFields(final String... fields) {
-    for (final String field : fields) {
-      addField(field);
-    }
-  }
-
-  protected final void addField(final String fieldName) {
-    final Field mojoField = field(mojo.getClass(), fieldName);
-    fieldMap.put(fieldName, mojoField);
+    wrapped.execute();
   }
 
   public void setSkip(final boolean skip) throws IllegalAccessException {
-    fieldMap.get("skip").set(mojo, skip);
+    fieldMap.get("skip").set(wrapped, skip);
   }
 
   public void setFrom(final String from) throws IllegalAccessException {
-    fieldMap.get("from").set(mojo, from);
+    fieldMap.get("from").set(wrapped, from);
   }
 
   public void setSmtpHost(final String smtphost) throws IllegalAccessException {
-    fieldMap.get("smtphost").set(mojo, smtphost);
+    fieldMap.get("smtphost").set(wrapped, smtphost);
   }
 
-  public void setSmtpPort(final String smtpport) throws IllegalAccessException {
-    fieldMap.get("smtpport").set(mojo, smtpport);
+  public void setSmtpPort(final Integer smtpport) throws IllegalAccessException {
+    fieldMap.get("smtpport").set(wrapped, smtpport);
   }
 
   public void setExpires(final String expires) throws IllegalAccessException {
-    fieldMap.get("expires").set(mojo, expires);
+    fieldMap.get("expires").set(wrapped, expires);
   }
 
   public void setCharset(final String charset) throws IllegalAccessException {
-    fieldMap.get("charset").set(mojo, charset);
+    fieldMap.get("charset").set(wrapped, charset);
   }
 
   public void setPriority(final String priority) throws IllegalAccessException {
-    fieldMap.get("priority").set(mojo, priority);
+    fieldMap.get("priority").set(wrapped, priority);
   }
 
   public void setFailOnError(final boolean failOnError) throws IllegalAccessException {
-    fieldMap.get("failOnError").set(mojo, failOnError);
+    fieldMap.get("failOnError").set(wrapped, failOnError);
   }
 
   public void setTopic(final String topic) throws IllegalAccessException {
-    fieldMap.get("topic").set(mojo, topic);
+    fieldMap.get("topic").set(wrapped, topic);
   }
 
   public void setSubject(final String subject) throws IllegalAccessException {
-    fieldMap.get("subject").set(mojo, subject);
+    fieldMap.get("subject").set(wrapped, subject);
   }
 
   public void setDryRun(final boolean dryRun) throws IllegalAccessException {
-    fieldMap.get("dryRun").set(mojo, dryRun);
+    fieldMap.get("dryRun").set(wrapped, dryRun);
   }
 }

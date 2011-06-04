@@ -31,8 +31,9 @@ import static org.codehaus.plexus.util.StringUtils.isEmpty;
 
 /**
  * Abstract Mojo which sends mails to the configured developers.
- * @since 5/27/11 10:39 PM
+ *
  * @requiresProject true
+ * @since 5/27/11 10:39 PM
  */
 public abstract class AbstractMailDevelopersMojo extends AbstractMailMojo {
   /**
@@ -47,6 +48,7 @@ public abstract class AbstractMailDevelopersMojo extends AbstractMailMojo {
 
   /**
    * Evaluates the recipients from the list of developers.
+   *
    * @return recipients of the email
    * @throws MojoExecutionException if a problem occurs evaluating the mail addresses
    */
