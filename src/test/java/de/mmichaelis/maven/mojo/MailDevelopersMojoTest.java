@@ -31,13 +31,10 @@ import javax.mail.Address;
 import javax.mail.Message;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -57,7 +54,6 @@ public class MailDevelopersMojoTest {
   private static final int MAX_DEVELOPERS = 4;
 
   private MailDevelopersMojoWrapper mojoWrapper;
-  private MessageWrapper messageWrapper;
   private Developer[] developers;
 
   @Before
@@ -72,7 +68,7 @@ public class MailDevelopersMojoTest {
     }
 
     mojoWrapper = new MailDevelopersMojoWrapper(new MailDevelopersMojo());
-    messageWrapper = new MessageWrapper(new de.mmichaelis.maven.mojo.Message());
+    final MessageWrapper messageWrapper = new MessageWrapper(new de.mmichaelis.maven.mojo.Message());
     messageWrapper.setText("Lorem Ipsum Dolor Sit Amet.");
     mojoWrapper.setMessage(messageWrapper.getWrapped());
   }
@@ -142,7 +138,7 @@ public class MailDevelopersMojoTest {
     final Date now = new Date();
     mojoWrapper.execute();
     final Mailbox inbox = Mailbox.get(developers[0].getEmail());
-    assertEquals("One new email for the first developer.", 1, inbox.getNewMessageCount());
+    assertEquals("One new email for the first developer.", 1, inbox.size());
     final Message message = inbox.get(0);
     assertTrue("Sent date should signal to be today.", DateUtils.isSameDay(now, message.getSentDate()));
     assertEquals("Size of recipients should match number of developers.", developers.length, message.getAllRecipients().length);
