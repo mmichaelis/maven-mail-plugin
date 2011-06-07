@@ -14,42 +14,37 @@
  * limitations under the License.                                             *
  ******************************************************************************/
 
-package de.mmichaelis.maven.mojo;
+package de.mmichaelis.maven.mojo.mail;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.util.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
- * Goal which touches a timestamp file.
- *
- * @goal mail-developers
+ * @since 6/7/11 10:21 PM
  */
-public final class MailDevelopersMojo extends AbstractMailDevelopersMojo {
-  /**
-   * The message to send.
-   * @parameter
-   * @required 
-   */
-  private Message message;
-  
-  /**
-   * Get the text body for this email.
-   *
-   * @return the text of the email
-   * @throws MojoExecutionException
-   *          if an unexpected problem occurs.
-   *          Throwing this exception causes a "BUILD ERROR" message to be displayed.
-   * @throws MojoFailureException
-   *          if an expected problem (such as a compilation failure) occurs.
-   *          Throwing this exception causes a "BUILD FAILURE" message to be displayed.
-   */
-  @Override
-  protected String getPlainText() throws MojoExecutionException, MojoFailureException {
-    return message.getText(getLog());
+public class MailConstants {
+  public static final String LF = "\r\n";
+  public static final String HOSTNAME;
+  public static final String HOSTIP;
+  public static final String DEFAULT_FROM;
+  public static final String USERNAME = System.getProperty("user.name");
+  public static final String SIGNATURE_SEPARATOR = "-- ";
+
+  static {
+    String hostname;
+    String hostip;
+    try {
+      final InetAddress addr = InetAddress.getLocalHost();
+      hostip = addr.getHostAddress();
+      hostname = addr.getHostName();
+    } catch (UnknownHostException e) {
+      hostname = "localhost";
+      hostip = "127.0.0.1";
+    }
+    HOSTNAME = hostname;
+    HOSTIP = hostip;
+
+    DEFAULT_FROM = USERNAME + "@" + HOSTNAME;
   }
+
 }

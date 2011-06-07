@@ -16,13 +16,19 @@
 
 package de.mmichaelis.maven.mojo;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Represents the message to be sent. If both, text and textFile is set textFile will be taken.
  * @since 6/4/11 11:26 PM
  */
-public class Message {
+public final class Message {
   /**
    * The message to send.
    */
@@ -35,11 +41,25 @@ public class Message {
   public Message() {
   }
 
-  public String getText() {
+  public String getText(final Log log) throws MojoExecutionException, MojoFailureException {
+    if (text == null && textFile == null) {
+      throw new MojoExecutionException("You should either specify <text> or <textFile> as message.");
+    }
+    if (text != null && textFile != null) {
+      log.warn("Specified both <text> and <textFile> as message. <textFile> will be taken.");
+    }
+    if (textFile != null) {
+      return getPlainTextFromFile(textFile);
+    }
     return text;
   }
 
-  public File getTextFile() {
-    return textFile;
+  private String getPlainTextFromFile(final File textFile) throws MojoExecutionException, MojoFailureException {
+    try {
+      return FileUtils.fileRead(textFile);
+    } catch (IOException e) {
+      throw new MojoExecutionException("Failed to read file " + textFile.getAbsolutePath(), e);
+    }
   }
+
 }
